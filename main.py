@@ -15,6 +15,8 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 from sklearn.preprocessing import OneHotEncoder
+import numpy as np
+
 
 '''
 Exercise 1
@@ -106,32 +108,40 @@ X_test
 def exercise2():
 
 
-    # Input feature: Neighborhood (categorical)
-    X2 = df[["Neighborhood"]]
-    y2 = df["SalePrice"]
+    # Input feature: neighborhood
+    X = df[["Neighborhood"]]
+    y = df["SalePrice"]
 
     # One-hot encode Neighborhood
     encoder = OneHotEncoder(sparse_output=False)
-    X2_encoded = encoder.fit_transform(X2)
+    X_encoded = encoder.fit_transform(X)
 
-    # 10 nearest neighbors regressor
+    # 10 nearest neighbors
     knn2 = KNeighborsRegressor(n_neighbors=10)
-    knn2.fit(X2_encoded, y2)
+    knn2.fit(X_encoded, y)
 
     # Test data: each unique neighborhood
-    X2_test = pd.DataFrame({
+    X_test = pd.DataFrame({
         "Neighborhood": df["Neighborhood"].unique()
     })
 
     # Encode test data
-    X2_test_encoded = encoder.transform(X2_test)
+    X_test_encoded = encoder.transform(X_test)
 
     # Predictions for each neighborhood
-    predictions2 = knn2.predict(X2_test_encoded)
+    predictions = knn2.predict(X_test_encoded)
 
-    print("\nExercise 2 — Predicted SalePrice per Neighborhood:")
-    for neigh, pred in zip(df["Neighborhood"].unique(), predictions2):
+    for neigh, pred in zip(df["Neighborhood"].unique(), predictions):
         print(f"{neigh}: ${pred:,.2f}")
+
+'''
+The KNN model in this case is taking in the neighborhood as the input. The output is the saleprice.
+The model will take one specific point and see which 10 other points are closest.
+It sees the category of those other 10 points and if they are the majority,
+it will be classified in that way.
+
+For bluestem, the prediction is  $143,590.00
+'''
 
 '''
 Exercise 3
@@ -139,61 +149,9 @@ Exercise 3
 Fit a 10-nearest neighbors model to predict the Sale Price of a 1800 square foot, 3 bedroom, 2 bathroom two-story home (House Style) in the Veenker neighborhood (Neighborhood) of Ames.
 '''
 
-def exercise3():
-    # Input features: numeric + categorical
-    X3 = df[[
-        "Gr Liv Area",
-        "Bedroom AbvGr",
-        "Full Bath",
-        "House Style",
-        "Neighborhood",
-    ]]
-    y3 = df["SalePrice"]
-
-    # Split into numeric and categorical parts
-    X3_numeric = X3[["Gr Liv Area", "Bedroom AbvGr", "Full Bath"]]
-    X3_cats = X3[["House Style", "Neighborhood"]]
-
-    # One-hot encode the categorical features
-    encoder3 = OneHotEncoder(sparse_output=False)
-    X3_cats_encoded = encoder3.fit_transform(X3_cats)
-
-    import numpy as np
-
-    # Combine numeric and encoded categorical features
-    X3_combined = np.hstack([X3_numeric.values, X3_cats_encoded])
-
-    # 10-nearest neighbors regressor
-    knn3 = KNeighborsRegressor(n_neighbors=10)
-    knn3.fit(X3_combined, y3)
-
-    # Test data for the specific home
-    X3_test = pd.DataFrame([
-        {
-            "Gr Liv Area": 1800,
-            "Bedroom AbvGr": 3,
-            "Full Bath": 2,
-            "House Style": "2Story",
-            "Neighborhood": "Veenker",
-        }
-    ])
-
-    X3_test_numeric = X3_test[["Gr Liv Area", "Bedroom AbvGr", "Full Bath"]]
-    X3_test_cats = X3_test[["House Style", "Neighborhood"]]
-
-    X3_test_cats_encoded = encoder3.transform(X3_test_cats)
-    X3_test_combined = np.hstack([X3_test_numeric.values, X3_test_cats_encoded])
-
-    prediction3 = knn3.predict(X3_test_combined)[0]
-
-    print("\nExercise 3 — Predicted SalePrice for 1800 sq ft, 3 bed, 2 bath, 2Story in Veenker:")
-    print(f"${prediction3:,.2f}")
-
-
 
 
 
 if __name__ == "__main__":
     exercise1()
     exercise2()
-    exercise3()
